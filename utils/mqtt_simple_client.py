@@ -2,13 +2,19 @@ import paho.mqtt.client as mqtt
 import time
 import random
 import threading
+from utils.event_system import EventSystem
 
 
 class MqttClient:
+    # Events Names
+    EVENT_TURNOFF = 'EVENT_TURNOFF'
+    EVENT_TURNON = 'EVENT_TURNON'
+
     def __init__(self):
-        self.defaultCoolDown = 20
+        self.defaultCoolDown = 10
         self.lastTime = time.time()
         self.client = mqtt.Client()
+        self.eventSystem = EventSystem()
 
     def on_connect(self, client, userdata, rc, *extra_params):
         print('Connected with result code ' + str(rc))
@@ -21,18 +27,27 @@ class MqttClient:
 
     # The callback for when a PUBLISH message is received from the server.
     def on_message(self, client, userdata, msg):
-        print ('Topic: ' + msg.topic + '\nMessage: ' + str(msg.payload))
+        print('Topic: ' + msg.topic + '\nMessage: ' + str(msg.payload))
+
         if msg.topic.startswith('v1/devices/me/rpc/request/'):
             requestId = msg.topic[len('v1/devices/me/rpc/request/'):len(msg.topic)]
-            print ('RPC call. RequestID: ' + requestId)
-            self.client.publish('v1/devices/me/rpc/response/' + requestId, "{\"Response\":\"cool\"}", 1)
+            print('RPC call. RequestID: ' + requestId)
 
-            # if "false" in str(msg.payload) and "turnOnDevice" in str(msg.payload):
-            #    sys.exit(0)
+            # Handle Events
+            if "GetDeviceOn" in str(msg.payload):
+                self.client.publish('v1/devices/me/rpc/response/' + requestId, "{\"value\":\"true\"}", 1)
+
+            if "checkStatus" in str(msg.payload):
+                self.client.publish('v1/devices/me/rpc/response/' + requestId, "{\"value\":\"true\"}", 1)
+
+            if "false" in str(msg.payload) and "SetDeviceOn" in str(msg.payload):
+                self.eventSystem.trigger(self.EVENT_TURNOFF)
+
+            if "true" in str(msg.payload) and "SetDeviceOn" in str(msg.payload):
+                self.eventSystem.trigger(self.EVENT_TURNON)
 
     def on_disconnect(self, client, userdata, rc=0):
         print ("DisConnected result code " + str(rc))
-        self.client.connect('39.108.164.189', 1883, 60)
 
     def on_log(self, client, userdata, level, buf):
         print("log: ", buf)
@@ -67,11 +82,11 @@ class MqttClient:
 
         # Random simulate bedroom or livingroom
         if random.uniform(0.0, 1.0) >= 0.5:
-            self.client.username_pw_set("ZrDIXzTD8hMD2gakwzaV")
+            self.client.username_pw_set("miX9o9EpGtnwdjXiEfSK")
         else:
-            self.client.username_pw_set("zXi6mGM4GBmj75Bvl5sk")
+            self.client.username_pw_set("9NzZQXm2vdGVmJ1SexyV")
 
-        self.client.connect('39.108.164.189', 1883, 0)
+        self.client.connect('io.astone.co', 1883, 0)
 
         thread = threading.Thread(target=self.listen, args=())
         thread.setDaemon(True)
@@ -80,4 +95,4 @@ class MqttClient:
         return self
 
     def listen(self):
-        self.client.loop_misc()
+        self.client.loop_forever()

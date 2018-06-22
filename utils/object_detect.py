@@ -81,9 +81,6 @@ class ObjectDetect:
         return image_np
 
     def report(self, scores, boxes, classes, category_index):
-        # TODO Remove this test report
-        self.eventSystem.trigger(self.EVENT_COCO)
-
         for i in range(min(5, boxes.shape[0])):
             if scores[i] > .5:
                 if classes[i] in category_index.keys():
@@ -123,9 +120,9 @@ class ObjectDetect:
         parser.add_argument('-src', '--source', dest='video_source', type=int,
                             default=0, help='Device index of the camera.')
         parser.add_argument('-wd', '--width', dest='width', type=int,
-                            default=600, help='Width of the frames in the video stream.')
+                            default=800, help='Width of the frames in the video stream.')
         parser.add_argument('-ht', '--height', dest='height', type=int,
-                            default=480, help='Height of the frames in the video stream.')
+                            default=600, help='Height of the frames in the video stream.')
         parser.add_argument('-num-w', '--num-workers', dest='num_workers', type=int,
                             default=2, help='Number of workers.')
         parser.add_argument('-q-size', '--queue-size', dest='queue_size', type=int,

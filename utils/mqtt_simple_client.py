@@ -11,7 +11,7 @@ class MqttClient:
     EVENT_TURNON = 'EVENT_TURNON'
 
     def __init__(self):
-        self.defaultCoolDown = 30
+        self.defaultCoolDown = 10
         self.lastTime = time.time()
         self.client = mqtt.Client()
         self.eventSystem = EventSystem()
@@ -82,11 +82,11 @@ class MqttClient:
 
         # Random simulate bedroom or livingroom
         if random.uniform(0.0, 1.0) >= 0.5:
-            self.client.username_pw_set("ZrDIXzTD8hMD2gakwzaV")
+            self.client.username_pw_set("miX9o9EpGtnwdjXiEfSK")
         else:
-            self.client.username_pw_set("zXi6mGM4GBmj75Bvl5sk")
+            self.client.username_pw_set("9NzZQXm2vdGVmJ1SexyV")
 
-        self.client.connect('39.108.164.189', 1883, 0)
+        self.client.connect('io.astone.co', 1883, 0)
 
         thread = threading.Thread(target=self.listen, args=())
         thread.setDaemon(True)
